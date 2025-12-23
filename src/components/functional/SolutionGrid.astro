@@ -1,31 +1,36 @@
 ---
 import { solutionsData } from '../../data/solutions';
-import Card from '../ui/Card.astro';
+import SpotlightCard from '../ui/SpotlightCard.jsx'; // Upgraded to SpotlightCard for better visuals
 ---
 
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {solutionsData.map((s) => {
         const Icon = s.icon;
         return (
-            <Card class="relative group overflow-hidden">
-                 <div class="absolute -right-10 -top-10 w-32 h-32 bg-lux-green/10 rounded-full blur-3xl group-hover:bg-lux-green/20 transition-all"></div>
-                
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="p-3 bg-lux-green/10 rounded-md text-lux-green group-hover:text-white group-hover:bg-lux-green transition-all">
-                        <Icon size={24} />
+            // FIX: Added the <a> tag here to make the whole card clickable
+            <a href={`/solutions/${s.id}`} class="block h-full">
+                <SpotlightCard client:visible className="h-full p-8 flex flex-col hover:bg-white/5 transition-colors group">
+                    
+                    {/* Background decoration */}
+                    <div class="absolute -right-10 -top-10 w-32 h-32 bg-lux-green/10 rounded-full blur-3xl group-hover:bg-lux-green/20 transition-all pointer-events-none"></div>
+                    
+                    <div class="flex items-center gap-4 mb-6">
+                        <div class="p-3 bg-lux-green/10 rounded-md text-lux-green border border-lux-green/20 group-hover:text-black group-hover:bg-lux-green transition-all duration-300">
+                            <Icon size={24} />
+                        </div>
+                        <h3 class="text-xl font-bold text-white group-hover:text-lux-green transition-colors">{s.title}</h3>
                     </div>
-                    <h3 class="text-xl font-bold text-white">{s.title}</h3>
-                </div>
-                
-                <p class="text-gray-400 mb-6 leading-relaxed">
-                    {s.description}
-                </p>
+                    
+                    <p class="text-gray-400 mb-8 leading-relaxed flex-grow text-sm">
+                        {s.description}
+                    </p>
 
-                <div class="flex items-center text-lux-green text-sm font-bold uppercase tracking-wider cursor-pointer group-hover:gap-2 transition-all">
-                    <span>Deploy Module</span>
-                    <span class="opacity-0 group-hover:opacity-100 transition-opacity">-></span>
-                </div>
-            </Card>
+                    <div class="flex items-center text-lux-green text-sm font-bold uppercase tracking-widest mt-auto group-hover:gap-3 transition-all">
+                        <span>Deploy Module</span>
+                        <span class="opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300">-></span>
+                    </div>
+                </SpotlightCard>
+            </a>
         )
     })}
 </div>

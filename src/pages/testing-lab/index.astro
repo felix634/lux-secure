@@ -3,7 +3,10 @@ import Layout from '../../layouts/Layout.astro';
 import { labExperiments } from '../../data/lab';
 import SpotlightCard from '../../components/ui/SpotlightCard.jsx';
 import ScrambleText from '../../components/ui/ScrambleText.jsx';
-import { ArrowRight, FlaskConical } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
+
+// We don't need FlaskConical anymore if it wasn't used, 
+// or keep it if you plan to use it elsewhere.
 ---
 
 <Layout title="Testing Lab">
@@ -22,7 +25,13 @@ import { ArrowRight, FlaskConical } from 'lucide-react';
             {labExperiments.map((exp) => (
                 <a href={`/testing-lab/${exp.id}`} class="group h-full">
                     <SpotlightCard client:visible className="h-full p-8 flex flex-col items-center text-center hover:bg-white/5 transition-colors">
-                        <div class={`p-4 rounded-full bg-opacity-10 mb-6 group-hover:scale-110 transition-transform duration-300 ${exp.color.replace('text-', 'bg-')}`}>
+                        
+                        {/* FIXED SECTION: 
+                           1. Removed dynamic bg color logic.
+                           2. Added static 'bg-lux-green/10' (or white/5) for a consistent glass look.
+                           3. Added a border for extra definition.
+                        */}
+                        <div class="p-6 rounded-full bg-white/5 border border-white/10 mb-6 group-hover:scale-110 group-hover:border-lux-green/30 transition-all duration-300">
                             <exp.icon size={40} className={exp.color} />
                         </div>
                         
@@ -32,7 +41,7 @@ import { ArrowRight, FlaskConical } from 'lucide-react';
                         <div class="text-xs font-mono text-gray-500 uppercase tracking-widest mb-4">
                             {exp.subtitle}
                         </div>
-                        <p class="text-gray-400 text-sm mb-8 flex-grow">
+                        <p class="text-gray-400 text-sm mb-8 flex-grow leading-relaxed">
                             {exp.description}
                         </p>
 

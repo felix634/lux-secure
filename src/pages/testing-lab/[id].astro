@@ -4,9 +4,8 @@ import { labExperiments } from '../../data/lab';
 import ComplianceDashboard from '../../components/lab/ComplianceDashboard.jsx';
 import LogisticsMap from '../../components/lab/LogisticsMap.jsx';
 import IndustrialTwin from '../../components/lab/IndustrialTwin.jsx';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Database, Lock, Cpu } from 'lucide-react';
 
-// Generate paths
 export async function getStaticPaths() {
   return labExperiments.map((exp) => ({
     params: { id: exp.id },
@@ -18,25 +17,25 @@ const { exp } = Astro.props;
 ---
 
 <Layout title={exp.title}>
-    <div class="max-w-7xl mx-auto py-8 h-screen flex flex-col">
+    <div class="max-w-7xl mx-auto py-8 min-h-screen flex flex-col">
         
         {/* Header */}
         <div class="flex items-center justify-between mb-8">
             <a href="/testing-lab" class="flex items-center gap-2 text-gray-500 hover:text-white transition-colors group">
                 <ArrowLeft size={16} class="group-hover:-translate-x-1 transition-transform" />
-                <span class="font-mono uppercase text-xs">Exit Simulation</span>
+                <span class="font-mono uppercase text-xs">Return to Lab</span>
             </a>
             
             <div class="text-right">
                 <h1 class="text-2xl font-bold text-white">{exp.title}</h1>
                 <div class={`text-xs font-mono uppercase ${exp.color}`}>
-                    Simulation Active // {exp.id}
+                    Interactive Simulation // {exp.id}
                 </div>
             </div>
         </div>
 
         {/* The Component Wrapper */}
-        <div class="flex-grow bg-[#050505] border border-gray-800 rounded-lg p-1 overflow-hidden shadow-2xl relative">
+        <div class="flex-grow bg-[#050505] border border-gray-800 rounded-lg p-1 overflow-hidden shadow-2xl relative min-h-[600px] mb-12">
              <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-lux-green to-transparent opacity-50"></div>
              
              <div class="h-full p-4 md:p-8">
@@ -44,6 +43,42 @@ const { exp } = Astro.props;
                 {exp.component === 'Logistics' && <LogisticsMap client:load />}
                 {exp.component === 'Industrial' && <IndustrialTwin client:load />}
              </div>
+        </div>
+
+        {/* NEW: Context / Usefulness Section */}
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 border-t border-gray-800 pt-12">
+            <div class="md:col-span-1">
+                <h3 class="text-xl font-bold text-white mb-2">SYSTEM ARCHITECTURE</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">
+                    This simulation demonstrates Lux Secure's ability to visualize complex, real-time datasets. 
+                    In a production environment, this dashboard serves as a <span class="text-white font-bold">"Control Tower"</span> 
+                    integrating data from ERPs, GPS telematics, and weather APIs.
+                </p>
+            </div>
+
+            <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div class="bg-white/5 border border-white/10 p-4 rounded-sm">
+                    <Database size={20} className="text-lux-green mb-3" />
+                    <h4 class="text-white font-bold text-sm mb-1">Data Aggregation</h4>
+                    <p class="text-xs text-gray-500">
+                        Ingests millions of data points per second from distributed IoT sensors without latency.
+                    </p>
+                </div>
+                <div class="bg-white/5 border border-white/10 p-4 rounded-sm">
+                    <Lock size={20} className="text-lux-green mb-3" />
+                    <h4 class="text-white font-bold text-sm mb-1">Integrity Layer</h4>
+                    <p class="text-xs text-gray-500">
+                        Blockchain-verified cargo manifests ensure no tampering occurs during transit.
+                    </p>
+                </div>
+                <div class="bg-white/5 border border-white/10 p-4 rounded-sm">
+                    <Cpu size={20} className="text-lux-green mb-3" />
+                    <h4 class="text-white font-bold text-sm mb-1">Predictive AI</h4>
+                    <p class="text-xs text-gray-500">
+                        Algorithms re-route assets automatically based on forecasted political or weather risks.
+                    </p>
+                </div>
+            </div>
         </div>
 
     </div>

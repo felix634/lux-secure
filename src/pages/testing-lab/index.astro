@@ -1,0 +1,47 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { labExperiments } from '../../data/lab';
+import SpotlightCard from '../../components/ui/SpotlightCard.jsx';
+import ScrambleText from '../../components/ui/ScrambleText.jsx';
+import { ArrowRight, FlaskConical } from 'lucide-react';
+---
+
+<Layout title="Testing Lab">
+    <div class="max-w-6xl mx-auto py-12">
+        <div class="text-center mb-20">
+            <h1 class="text-5xl font-bold text-white mb-4">
+                THE <span class="text-lux-green"><ScrambleText client:visible text="LABORATORY" /></span>
+            </h1>
+            <p class="text-gray-400 text-lg max-w-2xl mx-auto">
+                Interactive simulations of Lux Secure's capabilities in specific B2B environments. 
+                Select a protocol to launch the demo.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {labExperiments.map((exp) => (
+                <a href={`/testing-lab/${exp.id}`} class="group h-full">
+                    <SpotlightCard client:visible className="h-full p-8 flex flex-col items-center text-center hover:bg-white/5 transition-colors">
+                        <div class={`p-4 rounded-full bg-opacity-10 mb-6 group-hover:scale-110 transition-transform duration-300 ${exp.color.replace('text-', 'bg-')}`}>
+                            <exp.icon size={40} className={exp.color} />
+                        </div>
+                        
+                        <h2 class="text-2xl font-bold text-white mb-2 group-hover:text-lux-green transition-colors">
+                            {exp.title}
+                        </h2>
+                        <div class="text-xs font-mono text-gray-500 uppercase tracking-widest mb-4">
+                            {exp.subtitle}
+                        </div>
+                        <p class="text-gray-400 text-sm mb-8 flex-grow">
+                            {exp.description}
+                        </p>
+
+                        <div class="flex items-center gap-2 text-sm font-bold text-white uppercase tracking-widest group-hover:gap-4 transition-all">
+                            Initialize <ArrowRight size={16} className={exp.color} />
+                        </div>
+                    </SpotlightCard>
+                </a>
+            ))}
+        </div>
+    </div>
+</Layout>

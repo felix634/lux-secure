@@ -6,7 +6,9 @@ export default function Terminal() {
     { type: 'output', content: 'Type "help" for available commands.' },
   ]);
   const [input, setInput] = useState('');
-  const endRef = useRef(null);
+  
+  // We now reference the container, not the bottom element
+  const containerRef = useRef(null);
 
   const commands = {
     help: 'Available commands: help, services, clear, contact, whoami',
@@ -34,8 +36,12 @@ export default function Terminal() {
     }
   };
 
+  // FIX: Use scrollTop instead of scrollIntoView
+  // This ensures ONLY the black box scrolls, not your whole browser window.
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (containerRef.current) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
+    }
   }, [history]);
 
   return (
@@ -47,14 +53,14 @@ export default function Terminal() {
         <span className="ml-auto text-gray-600">bash -- lux-shell</span>
       </div>
       
-      <div className="flex-1 overflow-y-auto scrollbar-hide space-y-1">
+      {/* Attach ref to the scrollable container here */}
+      <div ref={containerRef} className="flex-1 overflow-y-auto scrollbar-hide space-y-1">
         {history.map((line, i) => (
           <div key={i} className={`${line.type === 'input' ? 'text-gray-400' : 'text-lux-green'}`}>
             {line.type === 'input' ? '$ ' : '> '}
             {line.content}
           </div>
         ))}
-        <div ref={endRef} />
       </div>
 
       <div className="mt-2 flex text-lux-green">
@@ -65,7 +71,6 @@ export default function Terminal() {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           className="bg-transparent border-none outline-none flex-1 text-gray-200 focus:ring-0"
-          autoFocus
           spellCheck="false"
         />
       </div>

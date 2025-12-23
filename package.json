@@ -15,10 +15,13 @@
     "@types/react-dom": "^19.2.3",
     "astro": "^5.16.6",
     "clsx": "^2.1.1",
+    "cobe": "^0.6.5",
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-globe.gl": "^2.37.0",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "^4.1.18",
+    "three": "^0.182.0"
   }
 }

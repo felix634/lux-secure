@@ -1,0 +1,31 @@
+---
+import { solutionsData } from '../../data/solutions';
+import Card from '../ui/Card.astro';
+---
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {solutionsData.map((s) => {
+        const Icon = s.icon;
+        return (
+            <Card class="relative group overflow-hidden">
+                 <div class="absolute -right-10 -top-10 w-32 h-32 bg-lux-green/10 rounded-full blur-3xl group-hover:bg-lux-green/20 transition-all"></div>
+                
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="p-3 bg-lux-green/10 rounded-md text-lux-green group-hover:text-white group-hover:bg-lux-green transition-all">
+                        <Icon size={24} />
+                    </div>
+                    <h3 class="text-xl font-bold text-white">{s.title}</h3>
+                </div>
+                
+                <p class="text-gray-400 mb-6 leading-relaxed">
+                    {s.description}
+                </p>
+
+                <div class="flex items-center text-lux-green text-sm font-bold uppercase tracking-wider cursor-pointer group-hover:gap-2 transition-all">
+                    <span>Deploy Module</span>
+                    <span class="opacity-0 group-hover:opacity-100 transition-opacity">-></span>
+                </div>
+            </Card>
+        )
+    })}
+</div>

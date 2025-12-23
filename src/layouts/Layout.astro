@@ -1,0 +1,38 @@
+---
+import '../styles/global.css';
+import Navbar from '../components/interactive/Navbar.jsx';
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="High-End Cybersecurity Solutions" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@100..800&display=swap" rel="stylesheet">
+		<title>{title} | LUX SECURE</title>
+	</head>
+	<body class="min-h-screen relative bg-lux-black text-gray-300 selection:bg-lux-green selection:text-black">
+        <div class="fixed inset-0 z-[-1] bg-[linear-gradient(to_right,#0a0a0a_1px,transparent_1px),linear-gradient(to_bottom,#0a0a0a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-20 pointer-events-none border-gray-800"></div>
+        
+        <Navbar client:load />
+        
+		<main class="pt-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+			<slot />
+		</main>
+
+        <footer class="mt-20 border-t border-lux-green/20 py-10 text-center text-sm text-gray-500">
+            <p>&copy; 2025 LUX SECURE. ALL SYSTEMS OPERATIONAL.</p>
+        </footer>
+	</body>
+</html>

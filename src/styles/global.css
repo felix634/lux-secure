@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  --color-lux-black: #050505;
+  --color-lux-dark: #0a0a0a;
+  --color-lux-green: #00ff41;
+  --color-lux-green-dim: #008f11;
+  --color-lux-glass: rgba(10, 10, 10, 0.7);
+  
+  --animate-scan: scan 2s linear infinite;
+  --animate-pulse-slow: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-lux-black);
+    color: #e5e5e5;
+    font-family: var(--font-mono);
+  }
+  
+  body {
+    overflow-x: hidden;
+  }
+}
+
+@keyframes scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+/* Utilities for Glassmorphism */
+.lux-glass {
+  background: var(--color-lux-glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 255, 65, 0.1);
+}
+
+.lux-neon-text {
+  text-shadow: 0 0 5px rgba(0, 255, 65, 0.5);
+}
+
+.lux-neon-border {
+  box-shadow: 0 0 5px rgba(0, 255, 65, 0.3);
+}

@@ -1,12 +1,18 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import SolutionGrid from '../components/functional/SolutionGrid.astro';
+import ScrambleText from '../components/ui/ScrambleText.jsx';
 ---
 
 <Layout title="Solutions">
     <div class="max-w-4xl mx-auto py-10">
-        <h1 class="text-4xl font-bold text-white mb-6 border-b border-lux-green/30 pb-4">
-            <span class="text-lux-green">>></span> AVAILABLE SOLUTIONS
+        <h1 class="text-4xl font-bold text-white mb-6 border-b border-lux-green/30 pb-4 flex items-center gap-2">
+            <span class="text-lux-green">>></span> 
+            
+            <span>
+                AVAILABLE <span class="text-lux-green"><ScrambleText client:visible text="SOLUTIONS" /></span>
+            </span>
+            
         </h1>
         <p class="text-gray-400 mb-12">
             Browse our catalog of high-performance security modules. 

@@ -1,14 +1,108 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { Lock } from 'lucide-react';
+import { vaultData } from '../data/vault';
+import RedactedText from '../components/ui/RedactedText.jsx';
+import SpotlightCard from '../components/ui/SpotlightCard.jsx';
+import { FileText, Lock, Fingerprint } from 'lucide-react';
 ---
-<Layout title="Restricted Area">
-    <div class="h-[60vh] flex flex-col items-center justify-center text-center">
-        <div class="p-6 bg-lux-green/5 rounded-full mb-6 border border-lux-green/20">
-            <Lock className="w-16 h-16 text-lux-green" />
+
+<Layout title="The Vault">
+    <div class="max-w-5xl mx-auto py-12">
+        
+        <div class="mb-16 border-b border-gray-800 pb-8">
+            <div class="flex items-center gap-3 mb-2">
+                <Lock className="w-5 h-5 text-lux-green animate-pulse" />
+                <span class="text-lux-green font-mono text-xs tracking-[0.2em] uppercase">Level 5 Clearance Required</span>
+            </div>
+            <h1 class="text-5xl font-bold text-white mb-4">THE VAULT</h1>
+            <p class="text-gray-500 font-mono text-sm max-w-2xl">
+                DECLASSIFIED CASE FILES // 
+                <span class="bg-white text-black px-1">STRICTLY CONFIDENTIAL</span>
+                <br>
+                Below is a curated archive of neutralized threats. Hover over redacted segments to decrypt technical specifics.
+            </p>
         </div>
-        <h1 class="text-4xl font-bold text-white mb-2">ACCESS DENIED</h1>
-        <p class="font-mono text-lux-green">This sector is currently under construction.</p>
-        <p class="text-gray-500 mt-2 text-sm">Clearance Level: Insufficient</p>
+
+        <div class="space-y-12">
+            {vaultData.map((file) => (
+                <div class="relative group">
+                    
+                    <div class="absolute -left-8 top-0 bottom-0 w-px bg-gray-800 hidden md:block group-last:hidden"></div>
+                    <div class="absolute -left-[35px] top-6 w-3 h-3 bg-lux-green rounded-full border-4 border-black hidden md:block"></div>
+
+                    <SpotlightCard client:visible className="w-full">
+                        <div class="flex flex-col lg:flex-row min-h-[300px]">
+                            
+                            <div class="lg:w-1/4 bg-lux-green/5 border-b lg:border-b-0 lg:border-r border-gray-800 p-6 flex flex-col justify-between">
+                                <div>
+                                    <div class="text-[10px] text-gray-500 font-mono mb-1">CASE ID</div>
+                                    <div class="text-xl font-bold text-white mb-6 font-mono">{file.id}</div>
+                                    
+                                    <div class="space-y-4">
+                                        <div>
+                                            <div class="text-[10px] text-gray-500 font-mono uppercase">Client</div>
+                                            <div class="text-sm text-lux-green font-bold">{file.client}</div>
+                                        </div>
+                                        <div>
+                                            <div class="text-[10px] text-gray-500 font-mono uppercase">Sector</div>
+                                            <div class="text-sm text-gray-300">{file.sector}</div>
+                                        </div>
+                                        <div>
+                                            <div class="text-[10px] text-gray-500 font-mono uppercase">Date</div>
+                                            <div class="text-sm text-gray-300">{file.date}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-8">
+                                    <div class="inline-block border border-red-500/50 text-red-500 text-[10px] px-2 py-1 font-bold rounded-sm uppercase tracking-widest transform -rotate-2 opacity-80">
+                                        {file.clearance}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="lg:w-2/3 p-8">
+                                <h2 class="text-2xl font-bold text-white mb-2 flex items-center gap-2">
+                                    <FileText className="w-5 h-5 text-gray-600" />
+                                    {file.title}
+                                </h2>
+                                <p class="text-gray-500 italic mb-6 border-l-2 border-lux-green pl-3 text-sm">
+                                    "{file.summary}"
+                                </p>
+                                
+                                <div class="bg-[#050505] border border-gray-800 p-6 rounded-sm relative">
+                                    <Fingerprint className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 text-white/5 pointer-events-none" />
+                                    
+                                    <RedactedText text={file.report} client:visible />
+                                </div>
+                            </div>
+
+                            <div class="lg:w-32 bg-[#080808] border-t lg:border-t-0 lg:border-l border-gray-800 p-4 flex flex-row lg:flex-col gap-4 items-center justify-center lg:justify-start">
+                                <div class="text-[10px] text-gray-500 font-mono writing-mode-vertical lg:rotate-180 hidden lg:block mb-2">
+                                    TOOLS_USED
+                                </div>
+                                
+                                {file.stack.map((tech) => (
+                                    <div class="group/icon relative p-2 bg-gray-900 rounded-md border border-gray-700 hover:border-lux-green transition-colors cursor-help">
+                                        <tech.icon className="w-5 h-5 text-gray-400 group-hover/icon:text-lux-green" />
+                                        
+                                        <div class="absolute right-full mr-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-lux-green text-black text-[10px] font-bold rounded opacity-0 group-hover/icon:opacity-100 whitespace-nowrap pointer-events-none transition-opacity">
+                                            {tech.name}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                        </div>
+                    </SpotlightCard>
+                </div>
+            ))}
+        </div>
+        
+        <div class="mt-20 text-center opacity-30">
+            <img src="/favicon.png" class="w-16 h-16 mx-auto grayscale opacity-50 mb-4" />
+            <p class="font-mono text-[10px] tracking-widest">END OF ARCHIVE // AUTHORIZED PERSONNEL ONLY</p>
+        </div>
+
     </div>
 </Layout>

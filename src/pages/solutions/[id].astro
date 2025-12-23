@@ -1,0 +1,99 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { solutionsData } from '../../data/solutions';
+import SolutionDemo from '../../components/interactive/SolutionDemo.jsx';
+import SpotlightCard from '../../components/ui/SpotlightCard.jsx';
+import { ArrowLeft, CheckCircle2, Cpu } from 'lucide-react';
+
+// 1. Generate paths for all solutions
+export async function getStaticPaths() {
+  return solutionsData.map((solution) => ({
+    params: { id: solution.id },
+    props: { solution },
+  }));
+}
+
+// 2. Get data for the current page
+const { solution } = Astro.props;
+const Icon = solution.icon;
+---
+
+<Layout title={solution.title}>
+    <div class="max-w-6xl mx-auto pt-10 pb-20">
+        
+        <a href="/solutions" class="inline-flex items-center gap-2 text-gray-500 hover:text-lux-green transition-colors mb-8 group">
+            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+            <span class="text-xs font-mono uppercase tracking-widest">Back to Modules</span>
+        </a>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            
+            <div>
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="p-3 bg-lux-green/10 rounded-md border border-lux-green/20 text-lux-green">
+                        <Icon size={32} />
+                    </div>
+                    <h1 class="text-3xl md:text-5xl font-bold text-white">{solution.title}</h1>
+                </div>
+
+                <p class="text-gray-400 text-lg leading-relaxed mb-8 border-l-2 border-gray-800 pl-4">
+                    {solution.longDescription}
+                </p>
+
+                <div class="space-y-4">
+                    <h3 class="text-white font-bold tracking-widest text-sm flex items-center gap-2">
+                        <Cpu size={16} class="text-lux-green" /> TECHNICAL SPECIFICATIONS
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {solution.features.map((feature) => (
+                            <SpotlightCard client:visible className="p-4 flex items-center gap-3">
+                                <CheckCircle2 size={18} class="text-lux-green flex-shrink-0" />
+                                <span class="text-gray-300 text-sm font-mono">{feature}</span>
+                            </SpotlightCard>
+                        ))}
+                    </div>
+                </div>
+
+                <div class="mt-10">
+                     <button class="bg-lux-green text-black font-bold py-3 px-8 rounded-sm hover:bg-white transition-colors shadow-[0_0_20px_rgba(0,255,65,0.4)] uppercase tracking-widest text-sm">
+                        Initialize Module
+                     </button>
+                </div>
+            </div>
+
+            <div class="relative mt-8 lg:mt-0">
+                <div class="absolute -inset-4 bg-lux-green/5 blur-3xl rounded-full"></div>
+                <SpotlightCard client:visible className="p-1">
+                    <div class="bg-[#050505] p-6 rounded-sm">
+                        <div class="flex items-center justify-between mb-6 border-b border-gray-800 pb-4">
+                            <div class="flex gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500/50"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500/50"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500/50"></div>
+                            </div>
+                            <span class="text-[10px] font-mono text-gray-500 uppercase">Live Simulation // {solution.id}</span>
+                        </div>
+                        
+                        <SolutionDemo client:load type={solution.type} />
+
+                        <div class="mt-6 space-y-2 font-mono text-xs">
+                            <div class="flex justify-between text-gray-500">
+                                <span>STATUS</span>
+                                <span class="text-lux-green">OPERATIONAL</span>
+                            </div>
+                            <div class="flex justify-between text-gray-500">
+                                <span>VERSION</span>
+                                <span class="text-gray-300">v4.1.18</span>
+                            </div>
+                            <div class="flex justify-between text-gray-500">
+                                <span>UPTIME</span>
+                                <span class="text-gray-300">99.999%</span>
+                            </div>
+                        </div>
+                    </div>
+                </SpotlightCard>
+            </div>
+
+        </div>
+    </div>
+</Layout>

@@ -20,7 +20,9 @@ export default function Navbar() {
           {/* Desktop Menu */}
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
-              <a href="/" className="hover:text-lux-green px-3 py-2 rounded-md text-sm font-medium transition-colors">STATUS</a>
+              
+              {/* CHANGED: STATUS -> COMPANY */}
+              <a href="/about" className="hover:text-lux-green px-3 py-2 rounded-md text-sm font-medium transition-colors">COMPANY</a>
               
               {/* Dropdown Wrapper */}
               <div 
@@ -33,7 +35,7 @@ export default function Navbar() {
                 </a>
 
                 {/* Dropdown Content */}
-                <div className={`absolute left-1/2 -translate-x-1/2 w-[500px] bg-lux-dark border border-lux-green/30 backdrop-blur-xl shadow-[0_0_30px_rgba(0,255,65,0.1)] rounded-sm mt-2 p-4 grid grid-cols-2 gap-4 transition-all duration-300 ease-in-out origin-top ${isOpen ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible'}`}>
+                <div className={`absolute left-1/2 -translate-x-1/2 w-[500px] bg-[#0a0a0a] border border-lux-green/30 shadow-[0_0_30px_rgba(0,255,65,0.1)] rounded-sm mt-2 p-4 grid grid-cols-2 gap-4 transition-all duration-300 ease-in-out origin-top ${isOpen ? 'opacity-100 scale-100 visible' : 'opacity-0 scale-95 invisible'}`}>
                     {solutionsData.map((s) => (
                         <a key={s.id} href={s.href} className="block p-3 hover:bg-lux-green/10 rounded-md transition-colors group/item">
                             <div className="flex items-center gap-2 text-lux-green mb-1">

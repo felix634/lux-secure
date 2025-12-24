@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { CheckCircle2, AlertCircle, Server } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Server, Shield, Activity, Lock, X } from 'lucide-react';
 
 export default function ComplianceDashboard() {
-  // --- PART 1: COMPLIANCE LOGIC ---
+  // --- PART 1: COMPLIANCE LOGIC (The "Paperwork" Side) ---
   const [controls, setControls] = useState([
     { id: 1, label: 'Multi-Factor Auth (MFA)', active: true, weight: 15 },
     { id: 2, label: 'Data Encryption (At Rest)', active: true, weight: 20 },
@@ -13,21 +13,59 @@ export default function ComplianceDashboard() {
     { id: 7, label: 'Incident Response Plan', active: true, weight: 10 },
   ]);
 
-  const score = controls.reduce((acc, curr) => acc + (curr.active ? curr.weight : 0), 0);
+  const complianceScore = controls.reduce((acc, curr) => acc + (curr.active ? curr.weight : 0), 0);
   const getGrade = (s) => (s >= 90 ? 'A' : s >= 70 ? 'B' : s >= 50 ? 'C' : 'F');
 
-  // --- PART 2: NETWORK TOPOLOGY (Draggable Nodes) ---
+  // --- PART 2: ACTIVE DEFENSE TOPOLOGY (The "Fun" Side) ---
   const [nodes, setNodes] = useState([
-    { id: 'HQ-Firewall', x: 50, y: 50, status: 'ok' },
-    { id: 'DB-Cluster-01', x: 150, y: 120, status: 'ok' },
-    { id: 'App-Server-Alpha', x: 250, y: 60, status: 'warning' },
-    { id: 'Backup-Node', x: 200, y: 200, status: 'ok' },
+    { id: 'HQ-Firewall', type: 'firewall', x: 50, y: 50, health: 100, status: 'secure', connections: 4520 },
+    { id: 'DB-Cluster-01', type: 'database', x: 200, y: 120, health: 95, status: 'secure', connections: 120 },
+    { id: 'App-Server-Alpha', type: 'server', x: 300, y: 60, health: 45, status: 'warning', connections: 890 },
+    { id: 'Legacy-Auth', type: 'server', x: 180, y: 250, health: 20, status: 'critical', connections: 45 },
   ]);
 
+  const [selectedNodeId, setSelectedNodeId] = useState(null);
   const [draggingId, setDraggingId] = useState(null);
   const svgRef = useRef(null);
 
-  const handleMouseDown = (id) => setDraggingId(id);
+  // --- SIMULATION LOOP ---
+  // Simulates random "attacks" or load fluctuations
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNodes(prevNodes => prevNodes.map(node => {
+        // Randomly decrease health if not "secure" (simulated decay/attack)
+        let change = 0;
+        if (node.status !== 'secure' && Math.random() > 0.7) {
+            change = -5;
+        }
+        // Randomly fluctuate connections
+        const connChange = Math.floor(Math.random() * 50) - 25;
+        
+        const newHealth = Math.max(0, Math.min(100, node.health + change));
+        
+        // Auto-update status based on health
+        let newStatus = node.status;
+        if (newHealth < 30) newStatus = 'critical';
+        else if (newHealth < 70) newStatus = 'warning';
+
+        return { 
+            ...node, 
+            health: newHealth,
+            status: newStatus,
+            connections: Math.max(0, node.connections + connChange)
+        };
+      }));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // --- INTERACTION HANDLERS ---
+  const handleMouseDown = (e, id) => {
+    e.stopPropagation(); // Prevent clicking background
+    setDraggingId(id);
+    setSelectedNodeId(id); // Select node on click/drag start
+  };
+
   const handleMouseUp = () => setDraggingId(null);
   
   const handleMouseMove = (e) => {
@@ -35,98 +73,213 @@ export default function ComplianceDashboard() {
     const rect = svgRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+    
+    // Constrain to container
+    const safeX = Math.max(20, Math.min(rect.width - 20, x));
+    const safeY = Math.max(20, Math.min(rect.height - 20, y));
 
-    setNodes(nodes.map(n => n.id === draggingId ? { ...n, x, y } : n));
+    setNodes(nodes.map(n => n.id === draggingId ? { ...n, x: safeX, y: safeY } : n));
+  };
+
+  // --- DEFENSE ACTIONS ---
+  const patchNode = (id) => {
+    setNodes(nodes.map(n => n.id === id ? { ...n, health: 100, status: 'secure' } : n));
+  };
+
+  const selectedNode = nodes.find(n => n.id === selectedNodeId);
+
+  // Helper to get color based on status
+  const getStatusColor = (status) => {
+    if (status === 'critical') return '#ef4444'; // Red
+    if (status === 'warning') return '#eab308'; // Yellow
+    return '#00ff41'; // Lux Green
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 h-full">
       
-      {/* LEFT: READINESS AUDIT */}
-      <div className="bg-[#0a0a0a] border border-gray-800 p-6 rounded-sm">
+      {/* LEFT PANEL: COMPLIANCE CHECKLIST */}
+      <div className="bg-[#0a0a0a] border border-gray-800 p-6 rounded-sm flex flex-col h-full">
         <div className="flex justify-between items-center mb-6 border-b border-gray-800 pb-4">
-            <h3 className="text-white font-bold">COMPLIANCE AUDIT</h3>
-            <div className={`text-2xl font-mono font-bold ${score > 80 ? 'text-lux-green' : 'text-yellow-500'}`}>
-                SOC2: {score}% ({getGrade(score)})
+            <h3 className="text-white font-bold flex items-center gap-2">
+                <Shield size={18} className="text-lux-green"/> COMPLIANCE AUDIT
+            </h3>
+            <div className={`text-2xl font-mono font-bold ${complianceScore > 80 ? 'text-lux-green' : 'text-yellow-500'}`}>
+                SOC2: {complianceScore}% ({getGrade(complianceScore)})
             </div>
         </div>
         
-        <div className="space-y-4">
+        <div className="space-y-3 overflow-y-auto flex-grow pr-2 scrollbar-thin scrollbar-thumb-gray-800">
             {controls.map(c => (
-                <div key={c.id} className="flex items-center justify-between p-3 bg-white/5 rounded-sm hover:bg-white/10 transition-colors cursor-pointer" onClick={() => {
-                    setControls(controls.map(item => item.id === c.id ? {...item, active: !item.active} : item));
-                }}>
-                    <span className="text-sm text-gray-300 flex items-center gap-2">
-                        {c.active ? <CheckCircle2 className="w-4 h-4 text-lux-green" /> : <AlertCircle className="w-4 h-4 text-gray-600" />}
+                <div key={c.id} 
+                    className={`flex items-center justify-between p-3 rounded-sm border transition-all cursor-pointer ${c.active ? 'bg-lux-green/5 border-lux-green/30' : 'bg-gray-900/50 border-gray-800 hover:border-gray-700'}`}
+                    onClick={() => setControls(controls.map(item => item.id === c.id ? {...item, active: !item.active} : item))}
+                >
+                    <span className={`text-sm flex items-center gap-3 ${c.active ? 'text-white' : 'text-gray-500'}`}>
+                        {c.active ? <CheckCircle2 size={16} className="text-lux-green" /> : <AlertCircle size={16} />}
                         {c.label}
                     </span>
-                    <div className={`w-8 h-4 rounded-full p-0.5 transition-colors ${c.active ? 'bg-lux-green' : 'bg-gray-700'}`}>
-                        <div className={`w-3 h-3 bg-black rounded-full shadow-md transform transition-transform ${c.active ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                    {/* Toggle Switch */}
+                    <div className={`w-8 h-4 rounded-full p-0.5 transition-colors duration-300 ${c.active ? 'bg-lux-green' : 'bg-gray-700'}`}>
+                        <div className={`w-3 h-3 bg-black rounded-full shadow-md transform transition-transform duration-300 ${c.active ? 'translate-x-4' : 'translate-x-0'}`}></div>
                     </div>
                 </div>
             ))}
         </div>
-
-        {/* Phishing Donut Chart Simulation */}
-        <div className="mt-8 flex items-center gap-4 p-4 border border-gray-800 rounded-sm bg-black">
-            <div className="relative w-16 h-16 rounded-full border-4 border-gray-800 border-t-lux-green animate-spin-slow flex items-center justify-center">
-                <span className="text-xs font-bold text-white">4%</span>
-            </div>
-            <div>
-                <div className="text-xs text-gray-500 uppercase font-mono">Phishing Sim</div>
-                <div className="text-sm text-white">Click Rate: <span className="text-lux-green">Low Risk</span></div>
-            </div>
-        </div>
       </div>
 
-      {/* RIGHT: INTERACTIVE TOPOLOGY */}
-      <div className="bg-[#050505] border border-gray-800 rounded-sm relative overflow-hidden flex flex-col">
-        <div className="absolute top-4 left-4 z-10 bg-black/80 px-2 py-1 border border-lux-green/30 text-[10px] text-lux-green font-mono">
-            LIVE TOPOLOGY // DRAG NODES TO REORGANIZE
+      {/* RIGHT PANEL: INTERACTIVE TOPOLOGY */}
+      <div className="bg-[#050505] border border-gray-800 rounded-sm relative overflow-hidden flex flex-col h-full group select-none">
+        
+        {/* Header / Legend */}
+        <div className="absolute top-4 left-4 z-10 flex gap-4 pointer-events-none">
+            <div className="bg-black/80 px-2 py-1 border border-lux-green/30 text-[10px] text-lux-green font-mono flex items-center gap-2">
+                <Activity size={10} className="animate-pulse"/> LIVE TOPOLOGY
+            </div>
         </div>
 
+        {/* The SVG Canvas */}
         <div 
             ref={svgRef}
             className="flex-grow w-full h-[400px] cursor-crosshair relative"
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
+            onClick={() => setSelectedNodeId(null)} // Deselect on bg click
         >
-            {/* Render Connections (Lines) */}
+            {/* 1. Connections (Lines) */}
             <svg className="absolute inset-0 w-full h-full pointer-events-none">
+                {/* Grid Background */}
+                <defs>
+                    <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                        <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#1a1a1a" strokeWidth="1"/>
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#grid)" />
+
+                {/* Dynamic Links */}
                 {nodes.map((n, i) => (
-                    // Connect every node to the first node (HQ) for simplicity in demo
+                    // Connect to 'HQ' (index 0) for star topology visual
                     i > 0 && (
-                        <line 
-                            key={`link-${i}`}
-                            x1={nodes[0].x + 20} y1={nodes[0].y + 20}
-                            x2={n.x + 20} y2={n.y + 20}
-                            stroke="#00ff41" strokeWidth="1" strokeOpacity="0.3"
-                        />
+                        <g key={`link-${i}`}>
+                            <line 
+                                x1={nodes[0].x} y1={nodes[0].y}
+                                x2={n.x} y2={n.y}
+                                stroke={n.status === 'secure' ? '#00ff41' : n.status === 'warning' ? '#eab308' : '#ef4444'} 
+                                strokeWidth={n.status === 'secure' ? 1 : 2} 
+                                strokeOpacity="0.4"
+                            />
+                            {/* Animated Packet on the line */}
+                            {n.status !== 'secure' && (
+                                <circle r="2" fill="#ef4444">
+                                    <animateMotion dur="2s" repeatCount="indefinite"
+                                        path={`M${nodes[0].x},${nodes[0].y} L${n.x},${n.y}`} />
+                                </circle>
+                            )}
+                        </g>
                     )
                 ))}
             </svg>
 
-            {/* Render Nodes */}
-            {nodes.map((node) => (
-                <div
-                    key={node.id}
-                    onMouseDown={() => handleMouseDown(node.id)}
-                    className="absolute w-10 h-10 bg-black border border-lux-green text-lux-green flex items-center justify-center rounded-sm hover:bg-lux-green hover:text-black cursor-grab active:cursor-grabbing transition-colors shadow-[0_0_15px_rgba(0,255,65,0.2)] z-20 group"
-                    style={{ left: node.x, top: node.y }}
-                >
-                    <Server size={18} />
-                    
-                    {/* Tooltip */}
-                    <div className="absolute top-12 left-1/2 -translate-x-1/2 bg-gray-900 border border-gray-700 p-2 rounded w-32 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-30">
-                        <div className="text-[10px] text-white font-bold mb-1">{node.id}</div>
-                        <div className={`text-[10px] uppercase font-mono ${node.status === 'ok' ? 'text-lux-green' : 'text-yellow-500'}`}>
-                            Health: {node.status === 'ok' ? '99%' : 'Patch Req.'}
+            {/* 2. Nodes (Draggable Divs) */}
+            {nodes.map((node) => {
+                const isSelected = selectedNodeId === node.id;
+                const color = getStatusColor(node.status);
+                
+                return (
+                    <div
+                        key={node.id}
+                        onMouseDown={(e) => handleMouseDown(e, node.id)}
+                        className={`absolute w-12 h-12 flex items-center justify-center rounded-sm border-2 cursor-grab active:cursor-grabbing transition-all shadow-[0_0_15px_rgba(0,0,0,0.5)] z-20 group`}
+                        style={{ 
+                            left: node.x, 
+                            top: node.y, 
+                            transform: 'translate(-50%, -50%)',
+                            backgroundColor: '#000',
+                            borderColor: color,
+                            boxShadow: isSelected ? `0 0 20px ${color}` : 'none'
+                        }}
+                    >
+                        {/* Icon based on type */}
+                        {node.type === 'firewall' && <Shield size={20} style={{ color }} />}
+                        {node.type === 'database' && <Server size={20} style={{ color }} />}
+                        {node.type === 'server' && <Activity size={20} style={{ color }} />}
+
+                        {/* Health Bar (Mini) */}
+                        <div className="absolute -bottom-3 left-0 w-full h-1 bg-gray-800 rounded-full overflow-hidden">
+                            <div 
+                                className="h-full transition-all duration-500" 
+                                style={{ width: `${node.health}%`, backgroundColor: color }}
+                            ></div>
+                        </div>
+
+                        {/* Hover Name Tag */}
+                        <div className="absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] text-gray-400 bg-black/80 px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                            {node.id}
                         </div>
                     </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
+
+        {/* 3. INSPECTOR PANEL (Slide-up or Overlay) */}
+        {selectedNode && (
+            <div className="absolute bottom-0 left-0 w-full bg-[#0a0a0a]/95 backdrop-blur-md border-t border-gray-800 p-4 transition-transform duration-300 z-30">
+                <div className="flex justify-between items-start">
+                    <div>
+                        <div className="text-[10px] text-gray-500 uppercase font-mono mb-1">NODE INSPECTOR</div>
+                        <h4 className="text-white font-bold text-lg flex items-center gap-2">
+                            {selectedNode.id}
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                                selectedNode.status === 'secure' ? 'border-green-900 text-green-500' : 
+                                selectedNode.status === 'warning' ? 'border-yellow-900 text-yellow-500' : 
+                                'border-red-900 text-red-500'
+                            }`}>
+                                {selectedNode.status.toUpperCase()}
+                            </span>
+                        </h4>
+                    </div>
+                    <button onClick={() => setSelectedNodeId(null)} className="text-gray-500 hover:text-white"><X size={16}/></button>
+                </div>
+
+                <div className="grid grid-cols-3 gap-4 mt-4">
+                    <div className="bg-black border border-gray-800 p-3 rounded-sm">
+                        <div className="text-[10px] text-gray-500 mb-1">SYSTEM HEALTH</div>
+                        <div className="text-xl font-mono text-white" style={{ color: getStatusColor(selectedNode.status) }}>
+                            {Math.round(selectedNode.health)}%
+                        </div>
+                        <div className="w-full h-1 bg-gray-800 mt-2 rounded-full overflow-hidden">
+                             <div className="h-full transition-all duration-500" style={{ width: `${selectedNode.health}%`, backgroundColor: getStatusColor(selectedNode.status) }}></div>
+                        </div>
+                    </div>
+
+                    <div className="bg-black border border-gray-800 p-3 rounded-sm">
+                        <div className="text-[10px] text-gray-500 mb-1">ACTIVE CONNECTIONS</div>
+                        <div className="text-xl font-mono text-blue-400">
+                            {selectedNode.connections.toLocaleString()}
+                        </div>
+                        <div className="text-[10px] text-gray-600 mt-1">TCP/UDP TRAFFIC</div>
+                    </div>
+
+                    <div className="flex flex-col justify-center">
+                        {selectedNode.status === 'secure' ? (
+                            <div className="text-center text-lux-green text-xs font-bold border border-lux-green/20 p-2 rounded-sm bg-lux-green/5">
+                                <CheckCircle2 size={16} className="mx-auto mb-1"/>
+                                SYSTEM SECURE
+                            </div>
+                        ) : (
+                            <button 
+                                onClick={() => patchNode(selectedNode.id)}
+                                className="bg-lux-green hover:bg-white text-black font-bold py-3 text-xs uppercase tracking-widest rounded-sm transition-colors shadow-[0_0_15px_rgba(0,255,65,0.3)] animate-pulse"
+                            >
+                                <Lock size={14} className="inline mr-1"/>
+                                DEPLOY PATCH
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </div>
+        )}
       </div>
     </div>
   );

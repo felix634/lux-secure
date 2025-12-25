@@ -87,6 +87,24 @@ import { ShieldAlert, Activity, ServerCrash } from 'lucide-react';
         </div>
         
         <ThreatGlobe client:only="react" />
+
+        <div class="max-w-3xl mx-auto mt-8">
+            <SpotlightCard client:visible className="p-6 text-center border-t border-lux-green/20">
+                <div class="flex flex-col items-center gap-4">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-lux-green/10 border border-lux-green/20 text-lux-green text-[10px] font-mono font-bold tracking-widest uppercase animate-pulse">
+                        <div class="w-2 h-2 rounded-full bg-lux-green"></div>
+                        Live Interception Grid
+                    </div>
+                    
+                    <p class="text-gray-400 text-sm leading-relaxed max-w-xl mx-auto">
+                        This visualization renders real-time attack vectors neutralized by the Lux Secure lattice. 
+                        <span class="text-red-400">Red arcs</span> indicate confirmed malicious payloads (DDoS/Malware), while 
+                        <span class="text-lux-green">Green rings</span> represent successful encryption handshakes. 
+                        Data is streamed directly from our global honeypot nodes.
+                    </p>
+                </div>
+            </SpotlightCard>
+        </div>
     </section>
 
 </Layout>

@@ -1,68 +1,139 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Cookie, X } from 'lucide-react';
+import { ShieldCheck, Cookie, X, Settings, Check } from 'lucide-react';
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  
+  // Default Settings
+  const [preferences, setPreferences] = useState({
+    necessary: true, 
+    analytics: false,
+    marketing: false,
+  });
 
   useEffect(() => {
-    // Check local storage after a small delay for dramatic effect
-    const consent = localStorage.getItem('lux_cookie_consent');
-    if (!consent) {
-      setTimeout(() => setVisible(true), 1500);
+    // 1. Check if user already consented
+    const savedSettings = localStorage.getItem('lux_cookie_settings');
+    if (!savedSettings) {
+      // Show automatically if no settings found (0.5s delay)
+      setTimeout(() => setVisible(true), 500);
+    } else {
+        setPreferences(JSON.parse(savedSettings));
     }
+
+    // 2. Listen for a custom event to re-open the banner (from Footer)
+    const handleReopen = () => {
+        setVisible(true);
+        setExpanded(true); // Open fully so they can edit
+    };
+
+    window.addEventListener('lux-open-cookies', handleReopen);
+    return () => window.removeEventListener('lux-open-cookies', handleReopen);
   }, []);
 
-  const handleAccept = () => {
-    localStorage.setItem('lux_cookie_consent', 'true');
+  const handleToggle = (key) => {
+    if (key === 'necessary') return; // Locked
+    setPreferences(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleSave = (all = false) => {
+    const finalSettings = all 
+        ? { necessary: true, analytics: true, marketing: true } 
+        : preferences;
+
+    localStorage.setItem('lux_cookie_settings', JSON.stringify(finalSettings));
     setVisible(false);
+    
+    // Log for verification
+    console.log('LuxOS: Protocols Updated', finalSettings);
   };
 
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-0 left-0 w-full p-4 z-50 flex justify-center pointer-events-none">
-      <div className="bg-[#0a0a0a]/90 backdrop-blur-xl border border-lux-green/30 p-6 rounded-sm shadow-[0_0_40px_rgba(0,255,65,0.15)] max-w-2xl w-full flex flex-col md:flex-row items-start md:items-center gap-6 pointer-events-auto animate-[slideUp_0.5s_ease-out]">
+    <div className="fixed bottom-0 left-0 w-full p-4 z-[100] flex justify-center items-end pointer-events-none">
+      <div className={`bg-[#0a0a0a]/95 backdrop-blur-xl border border-lux-green/30 rounded-sm shadow-[0_0_40px_rgba(0,255,65,0.15)] max-w-2xl w-full flex flex-col transition-all duration-500 ease-in-out pointer-events-auto overflow-hidden ${expanded ? 'max-h-[600px]' : 'max-h-[200px]'}`}>
         
-        {/* Icon */}
-        <div className="p-3 bg-lux-green/10 rounded-sm border border-lux-green/20">
-            <Cookie className="text-lux-green w-6 h-6" />
-        </div>
+        {/* HEADER */}
+        <div className="p-6 flex flex-col md:flex-row items-start md:items-center gap-6">
+            <div className="p-3 bg-lux-green/10 rounded-sm border border-lux-green/20 hidden md:block">
+                <Cookie className="text-lux-green w-6 h-6 animate-pulse" />
+            </div>
 
-        {/* Content */}
-        <div className="flex-1">
-            <h4 className="text-white font-bold text-sm uppercase tracking-widest mb-1 flex items-center gap-2">
-                System Protocol
-            </h4>
-            <p className="text-gray-400 text-xs leading-relaxed font-mono">
-                This secure channel utilizes localized cookies to maintain session encryption and optimize network latency. 
-                Continued use of this terminal constitutes acceptance of our data retention protocols.
-            </p>
-        </div>
+            <div className="flex-1">
+                <h4 className="text-white font-bold text-sm uppercase tracking-widest mb-1 flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-lux-green md:hidden"/> System Protocol // Data Retention
+                </h4>
+                <p className="text-gray-400 text-xs leading-relaxed font-mono">
+                    We use encrypted tracking nodes to optimize network latency. 
+                    Configure your clearance level below.
+                </p>
+            </div>
 
-        {/* Buttons */}
-        <div className="flex gap-3 w-full md:w-auto">
-            <button 
-                onClick={handleAccept}
-                className="flex-1 md:flex-none px-6 py-2 bg-lux-green text-black font-bold text-xs uppercase tracking-widest hover:bg-white transition-colors shadow-[0_0_15px_rgba(0,255,65,0.3)] whitespace-nowrap"
-            >
-                Acknowledge
-            </button>
-            <button 
-                onClick={() => setVisible(false)} // Just hide it for session
-                className="px-4 py-2 border border-gray-700 text-gray-500 hover:text-white hover:border-white transition-colors text-xs font-bold uppercase"
-            >
+            <button onClick={() => setVisible(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white">
                 <X size={16} />
             </button>
         </div>
 
+        {/* EXPANDED SETTINGS (The "Partially Acceptable" Part) */}
+        {expanded && (
+            <div className="px-6 pb-6 space-y-4 border-t border-gray-800/50 pt-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                {/* Necessary (Locked) */}
+                <div className="flex items-center justify-between opacity-50 cursor-not-allowed">
+                    <div>
+                        <div className="text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                            <ShieldCheck size={12} className="text-lux-green"/> Core Infrastructure
+                        </div>
+                        <div className="text-[10px] text-gray-500 font-mono mt-1">Required for system stability. Locked.</div>
+                    </div>
+                    <div className="w-10 h-5 bg-lux-green/20 rounded-full relative border border-lux-green/50">
+                        <div className="absolute right-1 top-1 w-3 h-3 bg-lux-green rounded-full shadow-[0_0_10px_rgba(0,255,65,0.5)]"></div>
+                    </div>
+                </div>
+
+                {/* Analytics Toggle */}
+                <div className="flex items-center justify-between cursor-pointer" onClick={() => handleToggle('analytics')}>
+                    <div>
+                        <div className="text-white text-xs font-bold uppercase tracking-wider">Telemetry & Analytics</div>
+                        <div className="text-[10px] text-gray-500 font-mono mt-1">Improve threat detection algorithms.</div>
+                    </div>
+                    {/* The Toggle Switch */}
+                    <div className={`w-10 h-5 rounded-full relative border transition-all duration-300 ${preferences.analytics ? 'bg-lux-green/20 border-lux-green/50' : 'bg-gray-900 border-gray-700'}`}>
+                        <div className={`absolute top-1 w-3 h-3 rounded-full transition-all duration-300 ${preferences.analytics ? 'right-1 bg-lux-green shadow-[0_0_10px_rgba(0,255,65,0.5)]' : 'left-1 bg-gray-500'}`}></div>
+                    </div>
+                </div>
+
+                {/* Marketing Toggle */}
+                <div className="flex items-center justify-between cursor-pointer" onClick={() => handleToggle('marketing')}>
+                    <div>
+                        <div className="text-white text-xs font-bold uppercase tracking-wider">Outreach Uplink</div>
+                        <div className="text-[10px] text-gray-500 font-mono mt-1">Targeted communications across the grid.</div>
+                    </div>
+                    <div className={`w-10 h-5 rounded-full relative border transition-all duration-300 ${preferences.marketing ? 'bg-lux-green/20 border-lux-green/50' : 'bg-gray-900 border-gray-700'}`}>
+                        <div className={`absolute top-1 w-3 h-3 rounded-full transition-all duration-300 ${preferences.marketing ? 'right-1 bg-lux-green shadow-[0_0_10px_rgba(0,255,65,0.5)]' : 'left-1 bg-gray-500'}`}></div>
+                    </div>
+                </div>
+            </div>
+        )}
+
+        {/* BUTTONS */}
+        <div className="bg-[#050505] p-4 border-t border-gray-800 flex flex-col sm:flex-row gap-3">
+            <button onClick={() => handleSave(true)} className="flex-1 px-6 py-3 bg-lux-green text-black font-bold text-xs uppercase tracking-widest hover:bg-white transition-colors shadow-[0_0_15px_rgba(0,255,65,0.3)] flex items-center justify-center gap-2">
+                <Check size={14} /> Accept All Protocols
+            </button>
+            
+            {expanded ? (
+                <button onClick={() => handleSave(false)} className="flex-1 px-6 py-3 border border-lux-green/30 text-lux-green font-bold text-xs uppercase tracking-widest hover:bg-lux-green/10 transition-colors">
+                    Confirm Selection
+                </button>
+            ) : (
+                <button onClick={() => setExpanded(true)} className="flex-1 px-6 py-3 border border-gray-700 text-gray-400 font-bold text-xs uppercase tracking-widest hover:border-lux-green hover:text-lux-green transition-colors flex items-center justify-center gap-2">
+                    <Settings size={14} /> Configure
+                </button>
+            )}
+        </div>
       </div>
-      
-      <style>{`
-        @keyframes slideUp {
-            from { transform: translateY(100%); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-      `}</style>
     </div>
   );
 }

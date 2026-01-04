@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Cookie, X, Settings, Check } from 'lucide-react';
+import { ShieldCheck, Cookie, X, Settings, Check, Ban } from 'lucide-react';
 
 export default function CookieBanner() {
   const [visible, setVisible] = useState(false);
@@ -16,16 +16,15 @@ export default function CookieBanner() {
     // 1. Check if user already consented
     const savedSettings = localStorage.getItem('lux_cookie_settings');
     if (!savedSettings) {
-      // Show automatically if no settings found (0.5s delay)
       setTimeout(() => setVisible(true), 500);
     } else {
         setPreferences(JSON.parse(savedSettings));
     }
 
-    // 2. Listen for a custom event to re-open the banner (from Footer)
+    // 2. Listen for custom reopen event
     const handleReopen = () => {
         setVisible(true);
-        setExpanded(true); // Open fully so they can edit
+        setExpanded(true);
     };
 
     window.addEventListener('lux-open-cookies', handleReopen);
@@ -37,16 +36,27 @@ export default function CookieBanner() {
     setPreferences(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // Logic for "Accept All" or "Confirm Selection"
   const handleSave = (all = false) => {
     const finalSettings = all 
         ? { necessary: true, analytics: true, marketing: true } 
         : preferences;
 
-    localStorage.setItem('lux_cookie_settings', JSON.stringify(finalSettings));
+    saveAndClose(finalSettings);
+  };
+
+  // Logic for "Reject All"
+  const handleRejectAll = () => {
+    // We keep 'necessary' true because we need to remember that they rejected cookies!
+    const rejectedSettings = { necessary: true, analytics: false, marketing: false };
+    saveAndClose(rejectedSettings);
+  };
+
+  const saveAndClose = (settings) => {
+    localStorage.setItem('lux_cookie_settings', JSON.stringify(settings));
+    setPreferences(settings); // Sync state
     setVisible(false);
-    
-    // Log for verification
-    console.log('LuxOS: Protocols Updated', finalSettings);
+    console.log('LuxOS: Protocols Updated', settings);
   };
 
   if (!visible) return null;
@@ -67,7 +77,7 @@ export default function CookieBanner() {
                 </h4>
                 <p className="text-gray-400 text-xs leading-relaxed font-mono">
                     We use encrypted tracking nodes to optimize network latency. 
-                    Configure your clearance level below.
+                    Rejecting non-essential nodes will not impact site visibility.
                 </p>
             </div>
 
@@ -76,7 +86,7 @@ export default function CookieBanner() {
             </button>
         </div>
 
-        {/* EXPANDED SETTINGS (The "Partially Acceptable" Part) */}
+        {/* EXPANDED SETTINGS */}
         {expanded && (
             <div className="px-6 pb-6 space-y-4 border-t border-gray-800/50 pt-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
                 {/* Necessary (Locked) */}
@@ -85,7 +95,7 @@ export default function CookieBanner() {
                         <div className="text-white text-xs font-bold uppercase tracking-wider flex items-center gap-2">
                             <ShieldCheck size={12} className="text-lux-green"/> Core Infrastructure
                         </div>
-                        <div className="text-[10px] text-gray-500 font-mono mt-1">Required for system stability. Locked.</div>
+                        <div className="text-[10px] text-gray-500 font-mono mt-1">Required for system stability (e.g. remembering this choice). Locked.</div>
                     </div>
                     <div className="w-10 h-5 bg-lux-green/20 rounded-full relative border border-lux-green/50">
                         <div className="absolute right-1 top-1 w-3 h-3 bg-lux-green rounded-full shadow-[0_0_10px_rgba(0,255,65,0.5)]"></div>
@@ -98,7 +108,6 @@ export default function CookieBanner() {
                         <div className="text-white text-xs font-bold uppercase tracking-wider">Telemetry & Analytics</div>
                         <div className="text-[10px] text-gray-500 font-mono mt-1">Improve threat detection algorithms.</div>
                     </div>
-                    {/* The Toggle Switch */}
                     <div className={`w-10 h-5 rounded-full relative border transition-all duration-300 ${preferences.analytics ? 'bg-lux-green/20 border-lux-green/50' : 'bg-gray-900 border-gray-700'}`}>
                         <div className={`absolute top-1 w-3 h-3 rounded-full transition-all duration-300 ${preferences.analytics ? 'right-1 bg-lux-green shadow-[0_0_10px_rgba(0,255,65,0.5)]' : 'left-1 bg-gray-500'}`}></div>
                     </div>
@@ -117,18 +126,38 @@ export default function CookieBanner() {
             </div>
         )}
 
-        {/* BUTTONS */}
-        <div className="bg-[#050505] p-4 border-t border-gray-800 flex flex-col sm:flex-row gap-3">
-            <button onClick={() => handleSave(true)} className="flex-1 px-6 py-3 bg-lux-green text-black font-bold text-xs uppercase tracking-widest hover:bg-white transition-colors shadow-[0_0_15px_rgba(0,255,65,0.3)] flex items-center justify-center gap-2">
-                <Check size={14} /> Accept All Protocols
+        {/* BUTTONS BAR */}
+        <div className="bg-[#050505] p-4 border-t border-gray-800 flex flex-col md:flex-row gap-3">
+            
+            {/* 1. ACCEPT ALL */}
+            <button 
+                onClick={() => handleSave(true)} 
+                className="flex-1 px-4 py-3 bg-lux-green text-black font-bold text-xs uppercase tracking-widest hover:bg-white transition-colors shadow-[0_0_15px_rgba(0,255,65,0.3)] flex items-center justify-center gap-2"
+            >
+                <Check size={14} /> Accept All
             </button>
             
+            {/* 2. REJECT ALL (Added) */}
+            <button 
+                onClick={handleRejectAll} 
+                className="flex-1 px-4 py-3 border border-red-500/30 text-red-500 font-bold text-xs uppercase tracking-widest hover:bg-red-500/10 hover:border-red-500 transition-colors flex items-center justify-center gap-2"
+            >
+                <Ban size={14} /> Reject All
+            </button>
+
+            {/* 3. CONFIGURE / SAVE */}
             {expanded ? (
-                <button onClick={() => handleSave(false)} className="flex-1 px-6 py-3 border border-lux-green/30 text-lux-green font-bold text-xs uppercase tracking-widest hover:bg-lux-green/10 transition-colors">
+                <button 
+                    onClick={() => handleSave(false)} 
+                    className="flex-1 px-4 py-3 border border-gray-700 text-gray-300 font-bold text-xs uppercase tracking-widest hover:bg-gray-800 transition-colors"
+                >
                     Confirm Selection
                 </button>
             ) : (
-                <button onClick={() => setExpanded(true)} className="flex-1 px-6 py-3 border border-gray-700 text-gray-400 font-bold text-xs uppercase tracking-widest hover:border-lux-green hover:text-lux-green transition-colors flex items-center justify-center gap-2">
+                <button 
+                    onClick={() => setExpanded(true)} 
+                    className="flex-1 px-4 py-3 border border-gray-700 text-gray-400 font-bold text-xs uppercase tracking-widest hover:border-white hover:text-white transition-colors flex items-center justify-center gap-2"
+                >
                     <Settings size={14} /> Configure
                 </button>
             )}

@@ -1,7 +1,6 @@
 ---
 import '../styles/global.css';
 import Navbar from '../components/interactive/Navbar.jsx';
-// 1. Import the Cookie Banner component
 import CookieBanner from '../components/ui/CookieBanner.jsx';
 
 interface Props {
@@ -34,17 +33,24 @@ const { title } = Astro.props;
 		</main>
 
         <footer class="mt-20 border-t border-lux-green/20 py-10 text-center text-sm text-gray-500">
-            <p>&copy; 2025 LUX SECURE. ALL SYSTEMS OPERATIONAL.</p>
+            <div class="flex flex-col items-center gap-4">
+                <p>&copy; 2025 LUX SECURE. ALL SYSTEMS OPERATIONAL.</p>
+                <div class="flex gap-4 text-xs font-mono">
+                    <a href="#" class="hover:text-lux-green transition-colors">PRIVACY POLICY</a>
+                    <span>|</span>
+                    <button onclick="window.dispatchEvent(new Event('lux-open-cookies'))" class="hover:text-lux-green transition-colors uppercase cursor-pointer">
+                        Cookie Preferences
+                    </button>
+                </div>
+            </div>
         </footer>
 
         <CookieBanner client:load />
 
         <script>
-            // This prevents the browser from remembering scroll position on reload
             if (history.scrollRestoration) {
                 history.scrollRestoration = 'manual';
             }
-            // This forces the window to the top immediately
             window.scrollTo(0, 0);
         </script>
 	</body>

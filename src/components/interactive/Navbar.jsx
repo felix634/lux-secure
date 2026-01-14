@@ -62,6 +62,17 @@ export default function Navbar() {
           </div>
         </div>
       </div>
+
+      {/* Mobile Menu Panel */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 w-full bg-[#0a0a0a] border-t border-lux-green/20 p-4 space-y-4">
+          <a href="/about" className="block py-2 text-sm font-medium hover:text-lux-green transition-colors">COMPANY</a>
+          <a href="/solutions" className="block py-2 text-sm font-medium hover:text-lux-green transition-colors">SOLUTIONS</a>
+          <a href="/vault" className="block py-2 text-sm font-medium hover:text-lux-green transition-colors">VAULT</a>
+          <a href="/testing-lab" className="block py-2 text-sm font-medium hover:text-lux-green transition-colors">LAB</a>
+          <a href="/consult" className="block py-3 text-center border border-lux-green/50 text-lux-green font-bold hover:bg-lux-green hover:text-black transition-all">CONSULT</a>
+        </div>
+      )}
     </nav>
   );
 }
